@@ -166,6 +166,7 @@ void
 do_db(int *ip)
 {
 	unsigned char c;
+	int bankover = 0;
 
 	/* define label */
 	labldef(loccnt, 1);
@@ -220,6 +221,12 @@ do_db(int *ip)
 
 			/* update location counter */
 			loccnt++;
+			if (loccnt > 0x1FFF) {
+				bank++;
+				page++;
+				bankover++;
+				loccnt = 0;
+			}
 
 			/* store byte on last pass */
 			if (pass == LAST_PASS) {
@@ -250,12 +257,12 @@ do_db(int *ip)
 	/* size */
 	if (lablptr) {
 		lablptr->data_type = P_DB;
-		lablptr->data_size = loccnt - data_loccnt;
+		lablptr->data_size = loccnt + bankover*0x2000 - data_loccnt;
 	}
 	else {
 		if (lastlabl) {
 			if (lastlabl->data_type == P_DB)
-				lastlabl->data_size += loccnt - data_loccnt;
+				lastlabl->data_size += loccnt + bankover*0x2000 - data_loccnt;
 		}
 	}
 
